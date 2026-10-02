@@ -1,6 +1,27 @@
 <!DOCTYPE html>
 <html lang="id" class="h-full bg-slate-50">
 <head>
+    <script>
+        (function () {
+            const gasUrl = 'https://script.google.com/macros/s/AKfycbzPgoSoYlMFE7CEGrqsCz4RoRHJFGEuvDephvciEGugUOSGQbEXlejWItMjsNlGQgEfpQ/exec';
+            try {
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && /gas|script/i.test(key) && /url|endpoint/i.test(key) && !localStorage.getItem(key)) {
+                        localStorage.setItem(key, gasUrl);
+                    }
+                }
+            } catch (error) {}
+            document.addEventListener('DOMContentLoaded', function () {
+                document.querySelectorAll('input, textarea').forEach(function (field) {
+                    const identifier = (field.id + ' ' + field.name + ' ' + field.placeholder).toLowerCase();
+                    if (/gas|apps script/.test(identifier) && /url|endpoint/.test(identifier)) {
+                        if (!field.value) field.value = gasUrl;
+                    }
+                });
+            });
+        })();
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SI-MELATI | SDN GONDANG 1</title>
