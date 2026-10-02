@@ -1636,12 +1636,55 @@
             }));
         }
 
+        function mergeRekapRecords(type, storageKey, remoteRecords) {
+            let localRecords = [];
+            try {
+                const saved = JSON.parse(localStorage.getItem(storageKey) || '[]');
+                if (Array.isArray(saved)) localRecords = saved;
+            } catch (error) {
+                console.warn(`Rekap lokal ${type} tidak dapat dibaca:`, error.message);
+            }
+
+            const cloudRecords = Array.isArray(remoteRecords)
+                ? remoteRecords.map(record => record?.data
+                    ? { ...record.data, id: record.data.id ?? record.id }
+                    : record).filter(record => record && record.id != null)
+                : [];
+            const cloudIds = new Set(cloudRecords.map(record => String(record.id)));
+            const merged = [...localRecords];
+            const mergedIds = new Set(merged.map(record => String(record.id)));
+
+            cloudRecords.forEach(record => {
+                if (!mergedIds.has(String(record.id))) {
+                    merged.push(record);
+                    mergedIds.add(String(record.id));
+                }
+            });
+
+            try {
+                localStorage.setItem(storageKey, JSON.stringify(merged));
+            } catch (error) {
+                console.warn(`Rekap ${type} tidak dapat disimpan di browser:`, error.message);
+            }
+
+            localRecords.forEach(record => {
+                if (record?.id != null && !cloudIds.has(String(record.id))) {
+                    saveRecordToSheet(type, record);
+                }
+            });
+            return merged;
+        }
+
         async function loadSpreadsheetData() {
             try {
                 const result = await gasGetData();
                 if (!result || result.ok !== true) throw new Error(result?.error || 'Respons GAS tidak valid');
                 const records = result.records || {};
                 AppState.uploadedFiles = Array.isArray(result.files) ? result.files : [];
+                mergeRekapRecords('rekapSuratKeluar', 'melati_rekap_surat_keluar', records.rekapSuratKeluar);
+                mergeRekapRecords('rekapSuratMasuk', 'melati_rekap_surat_masuk', records.rekapSuratMasuk);
+                renderRekapSuratKeluar();
+                renderRekapSuratMasuk();
                 if (Array.isArray(records.guru) && records.guru.length) {
                     AppState.guruList = records.guru.map(record => record.data);
                 } else {
@@ -2839,9 +2882,9 @@
             try {
                 localStorage.setItem('melati_rekap_surat_masuk', JSON.stringify(records));
             } catch (error) {
-                showNotification('Entri tidak dapat disimpan pada browser ini.', 'error');
-                return;
+                showNotification('Entri tidak dapat disimpan pada browser ini; akan dicoba disimpan ke Spreadsheet.', 'error');
             }
+            saveRecordToSheet('rekapSuratMasuk', records[0]);
             event.target.reset();
             closeModal('addSuratMasukModal');
             renderRekapSuratMasuk();
@@ -3040,8 +3083,9 @@
             try {
                 localStorage.setItem('melati_rekap_surat_keluar', JSON.stringify(records));
             } catch (error) {
-                showNotification('Surat dicetak, tetapi rekap tidak dapat disimpan pada browser ini.', 'error');
+                showNotification('Rekap tidak dapat disimpan di browser; akan dicoba disimpan ke Spreadsheet.', 'error');
             }
+            saveRecordToSheet('rekapSuratKeluar', records[0]);
             renderRekapSuratKeluar();
         }
 
