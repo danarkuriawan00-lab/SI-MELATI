@@ -1673,6 +1673,14 @@
 
         function handleLogin(e) {
             e.preventDefault();
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            if (username !== 'admin' || password !== 'gondang1jaya') {
+                showNotification('Username atau password salah.', 'error');
+                return;
+            }
+
             document.getElementById('loginPage').classList.add('hidden');
             document.getElementById('mainDashboardLayout').classList.remove('hidden');
             loadSpreadsheetData();
