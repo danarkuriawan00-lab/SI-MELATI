@@ -49,10 +49,12 @@
                 visibility: hidden;
             }
             #printableArea, #printableArea *,
-            #printableAreaSiswa, #printableAreaSiswa * {
+            #printableAreaSiswa, #printableAreaSiswa *,
+            #view-rekap-surat-keluar, #view-rekap-surat-keluar *,
+            #view-rekap-surat-masuk, #view-rekap-surat-masuk * {
                 visibility: visible;
             }
-            #printableArea, #printableAreaSiswa {
+            #printableArea, #printableAreaSiswa, #view-rekap-surat-keluar, #view-rekap-surat-masuk {
                 position: absolute;
                 left: 0;
                 top: 0;
@@ -266,6 +268,12 @@
                                 </button>
                                 <button onclick="navigateTo('surat-siswa')" id="nav-surat-siswa" class="nav-btn w-full text-left py-2 px-3 text-xs rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 flex items-center gap-2">
                                     <i class="fa-solid fa-circle text-[6px]"></i> SURAT SISWA
+                                </button>
+                                <button onclick="navigateTo('rekap-surat-keluar')" id="nav-rekap-surat-keluar" class="nav-btn w-full text-left py-2 px-3 text-xs rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 flex items-center gap-2">
+                                    <i class="fa-solid fa-circle text-[6px]"></i> REKAP SURAT KELUAR
+                                </button>
+                                <button onclick="navigateTo('rekap-surat-masuk')" id="nav-rekap-surat-masuk" class="nav-btn w-full text-left py-2 px-3 text-xs rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 flex items-center gap-2">
+                                    <i class="fa-solid fa-circle text-[6px]"></i> REKAP SURAT MASUK
                                 </button>
                             </div>
                         </div>
@@ -732,6 +740,79 @@
                         </div>
                     </div>
 
+                    <!-- ================= VIEW: REKAP SURAT KELUAR ================= -->
+                    <div id="view-rekap-surat-keluar" class="content-view hidden space-y-6">
+                        <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                                <div>
+                                    <h2 class="text-lg font-bold text-slate-800">REKAP SURAT KELUAR</h2>
+                                    <p class="text-xs text-slate-500">Daftar surat guru dan siswa yang telah dicetak dari SI-MELATI</p>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <input type="search" id="searchRekapSurat" oninput="renderRekapSuratKeluar()" placeholder="Cari nomor, perihal, atau tujuan..." class="no-print px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs w-64 focus:ring-2 focus:ring-cyan-500 outline-none">
+                                    <button onclick="window.print()" class="no-print px-3 py-2 bg-cyan-700 hover:bg-cyan-800 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm">
+                                        <i class="fa-solid fa-print"></i> Cetak Rekap
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full min-w-[900px] border-collapse text-center text-sm text-slate-800">
+                                    <thead class="bg-slate-100 uppercase font-bold text-slate-900">
+                                        <tr>
+                                            <th class="border border-slate-300 px-4 py-4">NO</th>
+                                            <th class="border border-slate-300 px-4 py-4">NO SURAT</th>
+                                            <th class="border border-slate-300 px-4 py-4">TANGGAL SURAT</th>
+                                            <th class="border border-slate-300 px-4 py-4">PERIHAL SURAT</th>
+                                            <th class="border border-slate-300 px-4 py-4">TERTUJU KEPADA</th>
+                                            <th class="border border-slate-300 px-4 py-4">UPLOAD SURAT</th>
+                                            <th class="border border-slate-300 px-4 py-4">DOWNLOAD SURAT</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="rekapSuratTableBody" class="divide-y divide-slate-200"></tbody>
+                                </table>
+                            </div>
+                            <p id="rekapSuratEmpty" class="hidden text-center text-xs text-slate-500 py-8">Belum ada surat keluar. Surat akan masuk ke rekap setelah dicetak melalui menu Layanan Surat.</p>
+                        </div>
+                    </div>
+
+                    <!-- ================= VIEW: REKAP SURAT MASUK ================= -->
+                    <div id="view-rekap-surat-masuk" class="content-view hidden space-y-6">
+                        <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                                <div>
+                                    <h2 class="text-lg font-bold text-slate-800">REKAP SURAT MASUK</h2>
+                                    <p class="text-xs text-slate-500">Daftar surat yang diterima SDN GONDANG 1</p>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <input type="search" id="searchRekapSuratMasuk" oninput="renderRekapSuratMasuk()" placeholder="Cari nomor, perihal, atau pengirim..." class="no-print px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs w-64 focus:ring-2 focus:ring-cyan-500 outline-none">
+                                    <button onclick="openModal('addSuratMasukModal')" class="no-print px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm">
+                                        <i class="fa-solid fa-plus"></i> Entri Surat Masuk
+                                    </button>
+                                    <button onclick="window.print()" class="no-print px-3 py-2 bg-cyan-700 hover:bg-cyan-800 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm">
+                                        <i class="fa-solid fa-print"></i> Cetak Rekap
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full min-w-[900px] border-collapse text-center text-sm text-slate-800">
+                                    <thead class="bg-slate-100 uppercase font-bold text-slate-900">
+                                        <tr>
+                                            <th class="border border-slate-300 px-4 py-4">NO</th>
+                                            <th class="border border-slate-300 px-4 py-4">NO SURAT</th>
+                                            <th class="border border-slate-300 px-4 py-4">TANGGAL SURAT</th>
+                                            <th class="border border-slate-300 px-4 py-4">PERIHAL SURAT</th>
+                                            <th class="border border-slate-300 px-4 py-4">PENGIRIM</th>
+                                            <th class="border border-slate-300 px-4 py-4">UPLOAD SURAT</th>
+                                            <th class="border border-slate-300 px-4 py-4">DOWNLOAD SURAT</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="rekapSuratMasukTableBody" class="divide-y divide-slate-200"></tbody>
+                                </table>
+                            </div>
+                            <p id="rekapSuratMasukEmpty" class="hidden text-center text-xs text-slate-500 py-8">Belum ada surat masuk. Gunakan tombol Entri Surat Masuk untuk menambahkan data.</p>
+                        </div>
+                    </div>
+
                     <!-- ================= VIEW 7: KEARSIPAN SK PEMBAGIAN TUGAS ================= -->
                     <div id="view-kearsipan-sk" class="content-view hidden space-y-6">
                         <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
@@ -1043,6 +1124,37 @@
                 <div class="pt-2 flex justify-end gap-2">
                     <button type="button" onclick="closeModal('addSKMenuModal')" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-xs font-semibold">Batal</button>
                     <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-md">Tambah Menu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="addSuratMasukModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 relative">
+            <button type="button" onclick="closeModal('addSuratMasukModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600" aria-label="Tutup">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <h3 class="font-bold text-slate-800 text-base">Entri Surat Masuk</h3>
+            <form onsubmit="handleAddSuratMasuk(event)" class="space-y-3">
+                <div>
+                    <label for="suratMasukNo" class="block text-xs font-semibold text-slate-600 mb-1">Nomor Surat</label>
+                    <input id="suratMasukNo" required maxlength="100" class="w-full p-2.5 border border-slate-300 rounded-xl text-xs outline-none focus:ring-2 focus:ring-cyan-500">
+                </div>
+                <div>
+                    <label for="suratMasukDate" class="block text-xs font-semibold text-slate-600 mb-1">Tanggal Surat</label>
+                    <input id="suratMasukDate" type="date" required class="w-full p-2.5 border border-slate-300 rounded-xl text-xs outline-none focus:ring-2 focus:ring-cyan-500">
+                </div>
+                <div>
+                    <label for="suratMasukSubject" class="block text-xs font-semibold text-slate-600 mb-1">Perihal Surat</label>
+                    <input id="suratMasukSubject" required maxlength="200" class="w-full p-2.5 border border-slate-300 rounded-xl text-xs outline-none focus:ring-2 focus:ring-cyan-500">
+                </div>
+                <div>
+                    <label for="suratMasukSender" class="block text-xs font-semibold text-slate-600 mb-1">Pengirim</label>
+                    <input id="suratMasukSender" required maxlength="150" class="w-full p-2.5 border border-slate-300 rounded-xl text-xs outline-none focus:ring-2 focus:ring-cyan-500">
+                </div>
+                <div class="pt-2 flex justify-end gap-2">
+                    <button type="button" onclick="closeModal('addSuratMasukModal')" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-xs font-semibold">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-md">Simpan Entri</button>
                 </div>
             </form>
         </div>
@@ -1634,6 +1746,8 @@
             // Render SK Archive, monthly report, and student archive table
             renderSKArchive();
             renderLaporBulanTable();
+            renderRekapSuratKeluar();
+            renderRekapSuratMasuk();
             renderKearsipanSiswaTable();
             // Initial Document Previews
             updateSuratGuruPreview();
@@ -1735,7 +1849,9 @@
                 'data-siswa': 'DATA SISWA & ARSIP BERKAS',
                 'surat-guru': 'LAYANAN SURAT UTAMA GURU',
                 'surat-siswa': 'LAYANAN SURAT KETERANGAN SISWA',
-                'kearsipan-sk': 'ARSIP SK PEMBAGIAN TUGAS',
+                            'rekap-surat-keluar': 'REKAP SURAT KELUAR',
+            'rekap-surat-masuk': 'REKAP SURAT MASUK',
+            'kearsipan-sk': 'ARSIP SK PEMBAGIAN TUGAS',
                 'kearsipan-lapor': 'LAPORAN BULANAN ADMINISTRASI',
                 'kearsipan-siswa': 'REPOSITORI KEARSIPAN SISWA'
             };
@@ -2123,6 +2239,7 @@
             const siswa = AppState.siswaList.find(s => s.id === siswaId) || AppState.siswaList[0];
             const suratType = document.getElementById('suratSiswaType')?.value || 'SURAT_AKTIF_SISWA';
             const noSurat = document.getElementById('suratSiswaNo')?.value || '421.2/ 112 /415.101.05/2026';
+            const tanggalSuratLabel = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
             const alasanInput = document.getElementById('suratSiswaKet');
             if (suratType === 'SURAT_LOMBA' && alasanInput?.value === 'Mengikuti Orang Tua ke SDN Gondang 2') {
                 alasanInput.value = '';
@@ -2203,7 +2320,7 @@
 
                 <div class="mt-12 flex justify-end">
                     <div class="text-center w-64 text-xs">
-                        <p>Gondang, 20 Maret 2026</p>
+                        <p>Gondang, ${tanggalSuratLabel}</p>
                         <p class="font-bold mt-1">Kepala SDN GONDANG 1</p>
                         <div class="h-20 flex items-center justify-center">
                             <span class="text-[10px] text-slate-300 border border-dashed border-slate-300 px-3 py-1">[ Stempel & TTD Digital ]</span>
@@ -2696,11 +2813,245 @@
             }
         }
 
+        function getRekapSuratMasuk() {
+            try {
+                const records = JSON.parse(localStorage.getItem('melati_rekap_surat_masuk') || '[]');
+                return Array.isArray(records) ? records : [];
+            } catch (error) {
+                return [];
+            }
+        }
+
+        function handleAddSuratMasuk(event) {
+            event.preventDefault();
+            const dateValue = document.getElementById('suratMasukDate').value;
+            const date = dateValue
+                ? new Date(`${dateValue}T00:00:00`).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })
+                : '-';
+            const records = getRekapSuratMasuk();
+            records.unshift({
+                id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+                number: document.getElementById('suratMasukNo').value.trim(),
+                date,
+                subject: document.getElementById('suratMasukSubject').value.trim(),
+                sender: document.getElementById('suratMasukSender').value.trim()
+            });
+            try {
+                localStorage.setItem('melati_rekap_surat_masuk', JSON.stringify(records));
+            } catch (error) {
+                showNotification('Entri tidak dapat disimpan pada browser ini.', 'error');
+                return;
+            }
+            event.target.reset();
+            closeModal('addSuratMasukModal');
+            renderRekapSuratMasuk();
+            showNotification('Data surat masuk berhasil ditambahkan.', 'success');
+        }
+
+        function renderRekapSuratMasuk() {
+            const tbody = document.getElementById('rekapSuratMasukTableBody');
+            if (!tbody) return;
+            const escapeHtml = value => String(value || '').replace(/[&<>"']/g, char => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[char]));
+            const query = (document.getElementById('searchRekapSuratMasuk')?.value || '').trim().toLowerCase();
+            const records = getRekapSuratMasuk().filter(record =>
+                [record.number, record.date, record.subject, record.sender]
+                    .some(value => String(value || '').toLowerCase().includes(query))
+            );
+            tbody.innerHTML = records.map((record, index) => `
+                <tr class="bg-white hover:bg-slate-50">
+                    <td class="border border-slate-300 px-4 py-3">${index + 1}</td>
+                    <td class="border border-slate-300 px-4 py-3 font-mono">${escapeHtml(record.number)}</td>
+                    <td class="border border-slate-300 px-4 py-3">${escapeHtml(record.date)}</td>
+                    <td class="border border-slate-300 px-4 py-3 text-left">${escapeHtml(record.subject)}</td>
+                    <td class="border border-slate-300 px-4 py-3 text-left">${escapeHtml(record.sender)}</td>
+                    <td class="border border-slate-300 px-4 py-3">
+                        <input type="file" id="suratMasukFile-${escapeHtml(record.id)}" accept=".pdf,.jpg,.jpeg,.png" class="hidden" onchange="uploadRekapSuratMasuk(event, '${escapeHtml(record.id)}')">
+                        <button onclick="document.getElementById('suratMasukFile-${escapeHtml(record.id)}').click()" class="no-print px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold whitespace-nowrap">
+                            <i class="fa-solid fa-cloud-arrow-up mr-1"></i> Upload Surat
+                        </button>
+                    </td>
+                    <td class="border border-slate-300 px-4 py-3">
+                        <button onclick="downloadRekapSuratMasuk('${escapeHtml(record.id)}')" class="no-print px-3 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-semibold whitespace-nowrap">
+                            <i class="fa-solid fa-download mr-1"></i> Download Surat
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+            document.getElementById('rekapSuratMasukEmpty')?.classList.toggle('hidden', records.length > 0);
+        }
+
+        async function uploadRekapSuratMasuk(event, recordId) {
+            const file = event.target.files[0];
+            if (!file) return;
+            if (file.size > 10 * 1024 * 1024) {
+                showNotification('Ukuran file surat maksimal 10 MB.', 'error');
+                event.target.value = '';
+                return;
+            }
+            try {
+                await saveRekapFile(`masuk-${recordId}`, file);
+                showNotification(`File ${file.name} berhasil disimpan pada perangkat ini.`, 'success');
+            } catch (error) {
+                showNotification('File surat gagal disimpan pada browser ini.', 'error');
+            }
+            event.target.value = '';
+        }
+
+        async function downloadRekapSuratMasuk(recordId) {
+            await downloadRekapSurat(`masuk-${recordId}`);
+        }
+
+        function getRekapSuratKeluar() {
+            try {
+                const records = JSON.parse(localStorage.getItem('melati_rekap_surat_keluar') || '[]');
+                return Array.isArray(records) ? records : [];
+            } catch (error) {
+                return [];
+            }
+        }
+
+        function openRekapFileDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open('melati_rekap_surat_files', 1);
+                request.onupgradeneeded = () => request.result.createObjectStore('files');
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function saveRekapFile(recordId, file) {
+            const db = await openRekapFileDB();
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction('files', 'readwrite');
+                transaction.objectStore('files').put({ blob: file, name: file.name, type: file.type }, String(recordId));
+                transaction.oncomplete = () => { db.close(); resolve(); };
+                transaction.onerror = () => { db.close(); reject(transaction.error); };
+            });
+        }
+
+        async function uploadRekapSurat(event, recordId) {
+            const file = event.target.files[0];
+            if (!file) return;
+            if (file.size > 10 * 1024 * 1024) {
+                showNotification('Ukuran file surat maksimal 10 MB.', 'error');
+                event.target.value = '';
+                return;
+            }
+            try {
+                await saveRekapFile(recordId, file);
+                showNotification(`File ${file.name} berhasil disimpan pada perangkat ini.`, 'success');
+                renderRekapSuratKeluar();
+            } catch (error) {
+                showNotification('File surat gagal disimpan pada browser ini.', 'error');
+            }
+            event.target.value = '';
+        }
+
+        async function downloadRekapSurat(recordId) {
+            try {
+                const db = await openRekapFileDB();
+                const savedFile = await new Promise((resolve, reject) => {
+                    const transaction = db.transaction('files', 'readonly');
+                    const request = transaction.objectStore('files').get(String(recordId));
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+                db.close();
+                if (!savedFile) {
+                    showNotification('Belum ada file surat yang diunggah.', 'info');
+                    return;
+                }
+                const objectUrl = URL.createObjectURL(savedFile.blob);
+                const link = document.createElement('a');
+                link.href = objectUrl;
+                link.download = savedFile.name || 'surat-keluar';
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
+            } catch (error) {
+                showNotification('File surat gagal diunduh.', 'error');
+            }
+        }
+
+        function renderRekapSuratKeluar() {
+            const tbody = document.getElementById('rekapSuratTableBody');
+            if (!tbody) return;
+            const escapeHtml = value => String(value || '').replace(/[&<>"']/g, char => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[char]));
+            const query = (document.getElementById('searchRekapSurat')?.value || '').trim().toLowerCase();
+            const records = getRekapSuratKeluar().filter(record =>
+                [record.number, record.date, record.subject, record.gender, record.recipient]
+                    .some(value => String(value || '').toLowerCase().includes(query))
+            );
+            tbody.innerHTML = records.map((record, index) => `
+                <tr class="bg-white hover:bg-slate-50">
+                    <td class="border border-slate-300 px-4 py-3">${index + 1}</td>
+                    <td class="border border-slate-300 px-4 py-3 font-mono">${escapeHtml(record.number)}</td>
+                    <td class="border border-slate-300 px-4 py-3">${escapeHtml(record.date)}</td>
+                    <td class="border border-slate-300 px-4 py-3 text-left">${escapeHtml(record.subject)}</td>
+                    <td class="border border-slate-300 px-4 py-3 text-left">${escapeHtml(record.recipient)}</td>
+                    <td class="border border-slate-300 px-4 py-3">
+                        <input type="file" id="rekapSuratFile-${escapeHtml(record.id)}" accept=".pdf,.jpg,.jpeg,.png" class="hidden" onchange="uploadRekapSurat(event, '${escapeHtml(record.id)}')">
+                        <button onclick="document.getElementById('rekapSuratFile-${escapeHtml(record.id)}').click()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold whitespace-nowrap">
+                            <i class="fa-solid fa-cloud-arrow-up mr-1"></i> Upload Surat
+                        </button>
+                    </td>
+                    <td class="border border-slate-300 px-4 py-3">
+                        <button onclick="downloadRekapSurat('${escapeHtml(record.id)}')" class="px-3 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-semibold whitespace-nowrap">
+                            <i class="fa-solid fa-download mr-1"></i> Download Surat
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+            document.getElementById('rekapSuratEmpty')?.classList.toggle('hidden', records.length > 0);
+        }
+
+        function recordOutgoingLetter() {
+            const isGuru = AppState.activeView === 'surat-guru';
+            const selectId = isGuru ? 'suratGuruSelect' : 'suratSiswaSelect';
+            const selectedId = document.getElementById(selectId)?.value;
+            const person = isGuru
+                ? AppState.guruList.find(item => String(item.id) === String(selectedId))
+                : AppState.siswaList.find(item => String(item.id) === String(selectedId));
+            if (!person) return;
+
+            const number = document.getElementById(isGuru ? 'suratGuruNo' : 'suratSiswaNo')?.value.trim() || '-';
+            let subject;
+            if (isGuru) {
+                const typeSelect = document.getElementById('suratGuruType');
+                const perihal = document.getElementById('suratGuruPerihal')?.value.trim();
+                subject = `${typeSelect?.selectedOptions[0]?.text || 'Surat Guru'}${perihal ? ` - ${perihal}` : ''}`;
+            } else {
+                const typeSelect = document.getElementById('suratSiswaType');
+                const detail = document.getElementById('suratSiswaKet')?.value.trim();
+                subject = `${typeSelect?.selectedOptions[0]?.text || 'Surat Siswa'}${detail ? ` - ${detail}` : ''}`;
+            }
+            const rawDate = isGuru ? document.getElementById('suratGuruTgl')?.value : new Date().toISOString().slice(0, 10);
+            const date = rawDate
+                ? new Date(`${rawDate}T00:00:00`).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })
+                : '-';
+            const gender = person.jk === 'L' ? 'Laki-laki' : person.jk === 'P' ? 'Perempuan' : '-';
+            const records = getRekapSuratKeluar();
+            records.unshift({ id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, number, date, subject, gender, recipient: person.name });
+            try {
+                localStorage.setItem('melati_rekap_surat_keluar', JSON.stringify(records));
+            } catch (error) {
+                showNotification('Surat dicetak, tetapi rekap tidak dapat disimpan pada browser ini.', 'error');
+            }
+            renderRekapSuratKeluar();
+        }
+
         function printGeneratedDocument() {
             if (AppState.activeView === 'surat-guru') {
                 updateSuratGuruPreview();
+                recordOutgoingLetter();
             } else if (AppState.activeView === 'surat-siswa') {
                 updateSuratSiswaPreview();
+                recordOutgoingLetter();
             }
             window.print();
         }
