@@ -1444,12 +1444,32 @@
             });
         }
 
-        function openDriveFile(fileId) {
+        async function openDriveFile(fileId) {
             if (!fileId) {
                 showNotification('ID file Drive tidak tersedia.', 'error');
                 return;
             }
-            window.open(`https://drive.google.com/file/d/${encodeURIComponent(fileId)}/view`, '_blank', 'noopener');
+
+            // Buka tab langsung dari klik pengguna agar tidak diblokir sebagai pop-up.
+            const previewWindow = window.open('about:blank', '_blank');
+            if (!previewWindow) {
+                showNotification('Izinkan pop-up untuk membuka arsip.', 'error');
+                return;
+            }
+
+            try {
+                const result = await requestGasFile(fileId);
+                const binary = atob(result.base64);
+                const bytes = new Uint8Array(binary.length);
+                for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+                const blob = new Blob([bytes], { type: result.mimeType || 'application/octet-stream' });
+                const objectUrl = URL.createObjectURL(blob);
+                previewWindow.location.replace(objectUrl);
+                previewWindow.addEventListener('unload', () => URL.revokeObjectURL(objectUrl), { once: true });
+            } catch (error) {
+                previewWindow.close();
+                showNotification(`Berkas gagal dibuka: ${error.message}`, 'error');
+            }
         }
 
         async function downloadDriveFile(fileId, fallbackName) {
