@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SI-MELATI - SDN GONDANG 1 (Sistem Informasi & Manajemen Layanan Administrasi Terpadu Istimewa)</title>
+    <title>SI-MELATI | SDN GONDANG 1</title>
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -79,6 +79,61 @@
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
+        @keyframes melati-marquee {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+        }
+        .melati-marquee-text {
+            display: flex;
+            width: max-content;
+            animation: melati-marquee 32s linear infinite;
+        }
+        .melati-marquee-text > span {
+            flex-shrink: 0;
+            padding-right: 2rem;
+        }
+        .guru-pattern-header {
+            position: relative;
+            isolation: isolate;
+            overflow: hidden;
+            background: linear-gradient(120deg, #ecfeff 0%, #ffffff 58%, #f0fdfa 100%);
+        }
+        .guru-pattern-header::before {
+            content: "";
+            position: absolute;
+            z-index: 0;
+            inset: 0 0 0 auto;
+            width: 42%;
+            background-image: radial-gradient(rgba(8, 145, 178, .42) 1px, transparent 1px);
+            background-size: 15px 15px;
+            mask-image: linear-gradient(to left, #000 10%, transparent 100%);
+            pointer-events: none;
+        }
+        .guru-pattern-header > * {
+            position: relative;
+            z-index: 1;
+        }
+        .guru-table-head {
+            background: linear-gradient(90deg, #ecfeff, #f1f5f9 48%, #ecfeff);
+        }
+        .melati-floral-login {
+            background-image:
+                linear-gradient(rgba(15, 23, 42, .88), rgba(8, 47, 73, .88)),
+                url('https://png.pngtree.com/thumb_back/fh260/background/20260114/pngtree-elegant-floral-pattern-design-delicate-and-intricate-motifs-with-stylized-flowers-image_21111004.webp');
+            background-position: center;
+            background-size: cover;
+        }
+        .floral-pattern-surface {
+            background-image:
+                linear-gradient(rgba(248, 250, 252, .93), rgba(248, 250, 252, .93)),
+                url('https://png.pngtree.com/thumb_back/fh260/background/20260114/pngtree-elegant-floral-pattern-design-delicate-and-intricate-motifs-with-stylized-flowers-image_21111004.webp');
+            background-position: center top;
+            background-size: cover;
+            background-attachment: fixed;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .melati-marquee-text { animation: none; width: auto; white-space: normal; }
+        }
     </style>
 </head>
 <body class="h-full text-slate-800 font-sans antialiased selection:bg-cyan-500 selection:text-white bg-slate-50">
@@ -88,7 +143,7 @@
     <!-- MAIN APP WRAPPER -->
     <div id="app" class="min-h-screen flex flex-col">
         
-        <section id="loginPage" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-cyan-950 to-slate-900 p-4 relative overflow-hidden">
+        <section id="loginPage" class="melati-floral-login min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-cyan-950 to-slate-900 p-4 relative overflow-hidden">
             <!-- Background Decorative Blobs -->
             <div class="absolute -top-32 -left-32 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none"></div>
             <div class="absolute -bottom-32 -right-32 w-96 h-96 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none"></div>
@@ -103,16 +158,22 @@
                     <p class="text-xs text-slate-500 mt-1 uppercase tracking-wider font-medium">Sistem Informasi & Manajemen Layanan Administrasi Terpadu Istimewa</p>
                 </div>
 
-                <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-5">
+                <div class="mb-6 overflow-hidden rounded-xl border border-cyan-100 bg-cyan-50 py-2.5 text-cyan-900" role="status" aria-label="Selamat Datang di SDN GONDANG 1. Layanan Administrasi Kini Lebih Cepat dan Mudah Melalui SI-MELATI. Mewujudkan Pelayanan Sekolah yang Transparan, Akuntabel, dan Istimewa.">
+                    <div class="melati-marquee-text whitespace-nowrap text-xs font-semibold" aria-hidden="true">
+                        <span>Selamat Datang di SDN GONDANG 1 • Layanan Administrasi Kini Lebih Cepat dan Mudah Melalui SI-MELATI (Sistem Informasi & Manajemen Layanan Administrasi Terpadu Istimewa) • Mewujudkan Pelayanan Sekolah yang Transparan, Akuntabel, dan Istimewa •</span>
+                        <span>Selamat Datang di SDN GONDANG 1 • Layanan Administrasi Kini Lebih Cepat dan Mudah Melalui SI-MELATI (Sistem Informasi & Manajemen Layanan Administrasi Terpadu Istimewa) • Mewujudkan Pelayanan Sekolah yang Transparan, Akuntabel, dan Istimewa •</span>
+                    </div>
+                </div>
+
+                <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-5" autocomplete="off">
                     <div>
-                        <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Username / NIP / NISN</label>
+                        <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Username</label>
                         <div class="relative">
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
                                 <i class="fa-solid fa-user"></i>
                             </span>
-                            <input type="text" id="loginUsername" required placeholder="Masukkan username" 
-                                class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-sm transition-all outline-none"
-                                value="admin">
+                            <input type="text" id="loginUsername" name="username" required placeholder="Masukkan username" autocomplete="off"
+                                class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-sm transition-all outline-none">
                         </div>
                     </div>
 
@@ -122,9 +183,8 @@
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
                                 <i class="fa-solid fa-lock"></i>
                             </span>
-                            <input type="password" id="loginPassword" required placeholder="••••••••" 
-                                class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-sm transition-all outline-none"
-                                value="gondang1jaya">
+                            <input type="password" id="loginPassword" name="password" required placeholder="••••••••" autocomplete="new-password"
+                                class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-sm transition-all outline-none">
                         </div>
                     </div>
 
@@ -254,7 +314,7 @@
             </aside>
 
             <!-- MAIN CONTENT AREA -->
-            <div class="flex-1 flex flex-col min-w-0 bg-slate-50 overflow-y-auto custom-scrollbar">
+            <div class="floral-pattern-surface flex-1 flex flex-col min-w-0 bg-slate-50 overflow-y-auto custom-scrollbar">
                 
                 <!-- TOP HEADER BAR -->
                 <header class="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between sticky top-0 z-20 shadow-sm">
@@ -400,7 +460,7 @@
                     <!-- ================= VIEW 2: DATA GURU GRID ================= -->
                     <div id="view-data-guru" class="content-view hidden space-y-6">
                         <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                            <div class="guru-pattern-header flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 rounded-2xl border border-cyan-100 p-4">
                                 <div>
                                     <h2 class="text-lg font-bold text-slate-800">DATA GURU & STAFF</h2>
                                     <p class="text-xs text-slate-500">Pilih profil guru untuk mengelola dan mendownload berkas kepegawaian</p>
@@ -419,7 +479,7 @@
                             <!-- Teacher Data Table -->
                             <div class="overflow-x-auto">
                                 <table class="w-full min-w-[1100px] border-collapse text-left text-xs text-slate-700">
-                                    <thead class="bg-slate-100 text-slate-900">
+                                    <thead class="guru-table-head text-slate-900">
                                         <tr>
                                             <th class="border border-slate-300 px-3 py-2 text-center">No</th>
                                             <th class="border border-slate-300 px-3 py-2 text-center">Foto</th>
@@ -1422,6 +1482,28 @@
             }
         }
 
+        async function restoreProfilePhotos(type, records) {
+            const files = (AppState.uploadedFiles || []).filter(file =>
+                String(file.type || '').toLowerCase() === type &&
+                String(file.category || '').toLowerCase() === 'foto profil' &&
+                (file.fileId || file.driveFileId)
+            );
+
+            await Promise.all(records.map(async record => {
+                if (record.photoData) return;
+                const photo = [...files].reverse().find(file => String(file.recordId) === String(record.id));
+                const fileId = photo && (photo.fileId || photo.driveFileId);
+                if (!fileId) return;
+
+                try {
+                    const result = await requestGasFile(fileId);
+                    record.photoData = `data:${result.mimeType || 'image/jpeg'};base64,${result.base64}`;
+                } catch (error) {
+                    console.warn(`Foto profil ${record.name} tidak dapat dimuat:`, error.message);
+                }
+            }));
+        }
+
         async function loadSpreadsheetData() {
             try {
                 const result = await gasGetData();
@@ -1438,6 +1520,10 @@
                 } else {
                     await gasPost({ action: 'saveBatch', records: AppState.siswaList.map(item => ({ type: 'siswa', id: item.id, data: item })) });
                 }
+                await Promise.all([
+                    restoreProfilePhotos('guru', AppState.guruList),
+                    restoreProfilePhotos('siswa', AppState.siswaList)
+                ]);
                 renderGuruGrid();
                 renderSiswaTable();
                 renderKearsipanSiswaTable();
@@ -1679,14 +1765,17 @@
             }
 
             const reader = new FileReader();
-            reader.onload = () => {
+            reader.onload = async () => {
                 const guru = AppState.guruList.find(item => item.id === guruId);
                 if (!guru) return;
                 guru.photoData = reader.result;
                 renderGuruGrid();
-                uploadFileToDrive(file, 'guru', guru.id, 'Foto Profil');
-                saveRecordToSheet('guru', guru);
-                showNotification(`Foto ${guru.name} berhasil diperbarui.`, 'success');
+                const uploaded = await uploadFileToDrive(file, 'guru', guru.id, 'Foto Profil');
+                if (uploaded) {
+                    await saveRecordToSheet('guru', guru);
+                    await loadSpreadsheetData();
+                    showNotification(`Foto ${guru.name} tersimpan dan diperbarui.`, 'success');
+                }
             };
             reader.readAsDataURL(file);
         }
@@ -1863,15 +1952,18 @@
             }
 
             const reader = new FileReader();
-            reader.onload = () => {
+            reader.onload = async () => {
                 const siswa = AppState.siswaList.find(item => item.id === siswaId);
                 if (!siswa) return;
                 siswa.photoData = reader.result;
                 renderSiswaTable();
                 renderKearsipanSiswaTable();
-                uploadFileToDrive(file, 'siswa', siswa.id, 'Foto Profil');
-                saveRecordToSheet('siswa', siswa);
-                showNotification(`Foto ${siswa.name} berhasil diperbarui.`, 'success');
+                const uploaded = await uploadFileToDrive(file, 'siswa', siswa.id, 'Foto Profil');
+                if (uploaded) {
+                    await saveRecordToSheet('siswa', siswa);
+                    await loadSpreadsheetData();
+                    showNotification(`Foto ${siswa.name} tersimpan dan diperbarui.`, 'success');
+                }
             };
             reader.readAsDataURL(file);
         }
@@ -1973,8 +2065,8 @@
                         <div class="h-20 flex items-center justify-center">
                             <span class="text-[10px] text-slate-300 border border-dashed border-slate-300 px-3 py-1">[ Stempel & TTD Digital ]</span>
                         </div>
-                        <p class="font-bold underline">SUHARTONO, S.Pd.</p>
-                        <p class="text-[10px]">NIP. 19680312 199103 1 009</p>
+                        <p class="font-bold underline">SUDARTO, S. Pd.SD</p>
+                        <p class="text-[10px]">NIP. 196804102007011029</p>
                     </div>
                 </div>
             `;
@@ -2070,25 +2162,75 @@
                         <div class="h-20 flex items-center justify-center">
                             <span class="text-[10px] text-slate-300 border border-dashed border-slate-300 px-3 py-1">[ Stempel & TTD Digital ]</span>
                         </div>
-                        <p class="font-bold underline">SUHARTONO, S.Pd.</p>
-                        <p class="text-[10px]">NIP. 19680312 199103 1 009</p>
+                        <p class="font-bold underline">SUDARTO, S. Pd.SD</p>
+                        <p class="text-[10px]">NIP. 196804102007011029</p>
                     </div>
                 </div>
             `;
+        }
+
+        const eIjazahRoster = [
+            { nisn: '134119038', name: 'Jihan Raudhah Urjuwanah', jk: 'P' },
+            { nisn: '3143621466', name: 'Adriarsa Afanda Primatrisda', jk: 'L' },
+            { nisn: '133698128', name: 'AQIFA NAYLA', jk: 'P' },
+            { nisn: '139323464', name: 'Nabila Nuraida Al Mawardi', jk: 'P' },
+            { nisn: '139576885', name: 'ABRISAM AHZA DANISH ALKHALIFI', jk: 'L' },
+            { nisn: '134327635', name: 'ASHILLA ISTI NUR AZIZAH', jk: 'P' },
+            { nisn: '139846215', name: 'FELISA PIKA RAMADHANI', jk: 'P' },
+            { nisn: '133064033', name: 'GABRIELANO VINO VERNANDO', jk: 'L' },
+            { nisn: '139110842', name: 'AQILA DHIA SHANESSA', jk: 'P' },
+            { nisn: '132048196', name: 'VERREL RAMDHANI WIBOWO', jk: 'L' },
+            { nisn: '134126989', name: 'ANNASTASYA CAHAYA PUTRI', jk: 'P' },
+            { nisn: '138286704', name: 'MARIO URDHA BRAHMACARY', jk: 'L' },
+            { nisn: '132773678', name: 'Muhammad Harlend Reyhan Pratama', jk: 'L' },
+            { nisn: '134406930', name: 'AQILA ELVALI ZEFA', jk: 'P' },
+            { nisn: '132643137', name: 'MUHAMMAD DZAKIY', jk: 'L' },
+            { nisn: '146811656', name: 'ZACKLY KINZA NUBAID', jk: 'L' },
+            { nisn: '145698905', name: 'NINDA ARA SILVIANSA', jk: 'P' },
+            { nisn: '135883881', name: 'PUTRI AULIA ARRAHMAN', jk: 'P' },
+            { nisn: '136773244', name: 'Fathan Abhinaya Irawan', jk: 'L' },
+            { nisn: '148605654', name: 'Bimo Ageng Tribakti', jk: 'L' },
+            { nisn: '135593103', name: 'MUHAMMAD HAZARD ARSYAVIN', jk: 'L' },
+            { nisn: '143720860', name: 'SAVIA DEVANI MIZA KHAMILA', jk: 'P' },
+            { nisn: '136649006', name: 'AYLAKIVA AULIA WIDYA RAMADHANI', jk: 'P' },
+            { nisn: '137642393', name: 'AIKO MELLYA SARI', jk: 'P' },
+            { nisn: '146380256', name: 'KANZAA SALSABILLA KHORIYAH', jk: 'P' },
+            { nisn: '133066765', name: 'Fransiskus Adriano Diandra', jk: 'L' },
+            { nisn: '139647086', name: 'BERLIANO SYAKIR ROIF JULIASMORO', jk: 'L' },
+            { nisn: '147847164', name: 'SANGLILA VALENT FLORENCIA RAMADANI', jk: 'P' },
+            { nisn: '131500056', name: 'MUHAMMAD ZAKI AMIR SULTHAN', jk: 'L' },
+            { nisn: '138628439', name: 'ELVIRA ALTA AZARENKA', jk: 'P' },
+            { nisn: '136895957', name: 'PUTRI INDONESIA ARSYFA', jk: 'P' },
+            { nisn: '138490106', name: 'NADYA PRAMITA SARI', jk: 'P' },
+            { nisn: '144676549', name: 'AZKA DIYANDRA PERMANA', jk: 'L' },
+            { nisn: '136295103', name: 'Christian Pandu Alfaro', jk: 'L' },
+            { nisn: '142383762', name: 'AHMAD RIZKY MAULANA', jk: 'L' },
+            { nisn: '131041924', name: 'ATHALLAH RADITYA JUNIOR', jk: 'L' },
+            { nisn: '145543753', name: 'FADILAH PUTRI AZ ZAHRA', jk: 'P' }
+        ];
+
+        function getEIjazahStudent(rosterEntry) {
+            const normalizeNisn = value => String(value || '').replace(/\D/g, '').replace(/^0+/, '');
+            return AppState.siswaList.find(siswa => normalizeNisn(siswa.nisn) === normalizeNisn(rosterEntry.nisn));
         }
 
         function renderKearsipanSiswaTable() {
             const tbody = document.getElementById('kearsipanSiswaTableBody');
             if (!tbody) return;
 
-            tbody.innerHTML = AppState.siswaList.map((siswa, index) => `
+            tbody.innerHTML = eIjazahRoster.map((rosterEntry, index) => {
+                const siswa = getEIjazahStudent(rosterEntry) || {
+                    id: `ijazah-${rosterEntry.nisn}`,
+                    ...rosterEntry
+                };
+                return `
                 <tr class="h-16 bg-white hover:bg-slate-50">
                     <td class="border border-slate-300 px-4 py-3">${index + 1}</td>
-                    <td class="border border-slate-300 px-4 py-3 font-mono">${siswa.nisn}</td>
+                    <td class="border border-slate-300 px-4 py-3 font-mono">${rosterEntry.nisn}</td>
                     <td class="border border-slate-300 px-4 py-3">
                         <div class="flex flex-col items-center gap-2">
                             <div class="mx-auto w-10 h-10 rounded-full overflow-hidden bg-cyan-100 text-cyan-700 flex items-center justify-center font-bold">
-                                ${siswa.photoData ? `<img src="${siswa.photoData}" alt="Foto ${siswa.name}" class="w-full h-full object-cover">` : siswa.name.split(' ').map(part => part[0]).slice(0, 2).join('').toUpperCase()}
+                                ${siswa.photoData ? `<img src="${siswa.photoData}" alt="Foto ${rosterEntry.name}" class="w-full h-full object-cover">` : rosterEntry.name.split(' ').map(part => part[0]).slice(0, 2).join('').toUpperCase()}
                             </div>
                             <input type="file" id="kearsipanSiswaPhotoInput-${siswa.id}" accept="image/*" class="hidden" onchange="handleSiswaPhotoSelected(event, ${siswa.id})">
                             <button type="button" onclick="document.getElementById('kearsipanSiswaPhotoInput-${siswa.id}').click()" class="px-2 py-1 bg-cyan-50 hover:bg-cyan-100 text-cyan-700 rounded-lg text-[10px] font-semibold whitespace-nowrap">
@@ -2096,8 +2238,8 @@
                             </button>
                         </div>
                     </td>
-                    <td class="border border-slate-300 px-4 py-3 text-left font-semibold">${siswa.name}</td>
-                    <td class="border border-slate-300 px-4 py-3">${siswa.jk === 'L' ? 'Laki-laki' : 'Perempuan'}</td>
+                    <td class="border border-slate-300 px-4 py-3 text-left font-semibold">${rosterEntry.name}</td>
+                    <td class="border border-slate-300 px-4 py-3">${rosterEntry.jk === 'L' ? 'Laki-laki' : 'Perempuan'}</td>
                     <td class="border border-slate-300 px-4 py-3">
                         <input type="file" id="ijazahFile-${siswa.id}" accept=".pdf,.jpg,.jpeg,.png" class="hidden" onchange="handleIjazahUpload(event, ${siswa.id})">
                         <button onclick="document.getElementById('ijazahFile-${siswa.id}').click()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold">
@@ -2111,7 +2253,7 @@
                         </button>
                     </td>
                 </tr>
-            `).join('');
+            `}).join('');
         }
 
         function handleIjazahUpload(event, siswaId) {
@@ -2510,4 +2652,3 @@
     </script>
 </body>
 </html>
-
