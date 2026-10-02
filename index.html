@@ -1527,6 +1527,9 @@
                 renderGuruGrid();
                 renderSiswaTable();
                 renderKearsipanSiswaTable();
+                renderSKArchive();
+                renderLaporBulanTable();
+                if (AppState.activeView === 'data-guru-detail') openGuruDetail(AppState.currentGuruId);
                 populateGuruSelectOptions();
                 populateSiswaSelectOptions();
                 updateSuratGuruPreview();
@@ -1569,6 +1572,16 @@
                 };
                 reader.readAsDataURL(file);
             });
+        }
+
+        function findUploadedFile(type, recordId, category) {
+            const normalize = value => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+            return [...(AppState.uploadedFiles || [])].reverse().find(file =>
+                normalize(file.type) === normalize(type) &&
+                String(file.recordId) === String(recordId) &&
+                normalize(file.category) === normalize(category) &&
+                (file.fileId || file.driveFileId)
+            );
         }
 
         window.onload = function() {
@@ -1642,6 +1655,7 @@
             e.preventDefault();
             document.getElementById('loginPage').classList.add('hidden');
             document.getElementById('mainDashboardLayout').classList.remove('hidden');
+            loadSpreadsheetData();
             showNotification('Selamat datang di Portal SI-MELATI SDN GONDANG 1', 'success');
         }
 
@@ -1798,11 +1812,8 @@
 
             AppState.defaultGuruDocs.forEach(doc => {
                 const category = categoryByDoc[doc.id];
-                const file = [...AppState.uploadedFiles].reverse().find(item =>
-                    item.type === 'guru' &&
-                    String(item.recordId) === String(guru.id) &&
-                    item.category === category
-                );
+                const file = findUploadedFile('guru', guru.id, category);
+                const fileId = file && (file.fileId || file.driveFileId);
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-slate-50 transition-colors';
                 const safeName = String(doc.name).replace(/[&<>"']/g, char => ({
@@ -1830,10 +1841,10 @@
                     <td class="px-4 py-3 text-center">
                         <div class="flex items-center justify-center gap-2">
                             ${file ? `
-                                <button type="button" onclick="openDriveFile('${file.fileId}')" class="px-3 py-1.5 bg-cyan-50 hover:bg-cyan-100 text-cyan-700 rounded-lg text-xs font-semibold transition-colors inline-flex items-center gap-1">
+                                <button type="button" onclick="openDriveFile('${fileId}')" class="px-3 py-1.5 bg-cyan-50 hover:bg-cyan-100 text-cyan-700 rounded-lg text-xs font-semibold transition-colors inline-flex items-center gap-1">
                                     <i class="fa-solid fa-eye"></i> Lihat File
                                 </button>
-                                <button type="button" onclick="downloadDriveFile('${file.fileId}')" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition-colors inline-flex items-center gap-1" title="Unduh file ke perangkat ini">
+                                <button type="button" onclick="downloadDriveFile('${fileId}')" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition-colors inline-flex items-center gap-1" title="Unduh file ke perangkat ini">
                                     <i class="fa-solid fa-download"></i> Download
                                 </button>
                             ` : '<span class="text-xs text-slate-400">Unggah dokumen untuk mengaktifkan</span>'}
@@ -1880,19 +1891,26 @@
             filtered.forEach((siswa, idx) => {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50 transition-colors";
-                const archiveCells = archiveCategories.map((category, archiveIndex) => `
+                const archiveCells = archiveCategories.map((category, archiveIndex) => {
+                    const archiveFile = findUploadedFile('siswa', siswa.id, category);
+                    const archiveFileId = archiveFile && (archiveFile.fileId || archiveFile.driveFileId);
+                    return `
                     <td class="px-3 py-3 text-center">
                         <div class="flex flex-col items-center justify-center gap-1.5">
-                            <button onclick="downloadSiswaArchive(${siswa.id}, '${category}')" class="px-2 py-1.5 bg-cyan-50 hover:bg-cyan-100 text-cyan-700 rounded-lg text-[10px] font-semibold transition-colors whitespace-nowrap">
+                            <span class="text-[10px] font-semibold ${archiveFileId ? 'text-emerald-700' : 'text-slate-400'}">${archiveFileId ? 'Tersimpan di Google Drive' : 'Belum diunggah'}</span>
+                            ${archiveFileId ? `<span class="max-w-40 truncate text-[10px] text-slate-500" title="${String(archiveFile.fileName || '').replace(/[&<>\"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', "'": '&#39;' }[char]))}">${String(archiveFile.fileName || 'File arsip').replace(/[&<>\"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', "'": '&#39;' }[char]))}</span>` : ''}
+                            ${archiveFileId ? `<button onclick="openDriveFile('${archiveFileId}')" class="px-2 py-1.5 bg-cyan-50 hover:bg-cyan-100 text-cyan-700 rounded-lg text-[10px] font-semibold whitespace-nowrap"><i class="fa-solid fa-eye mr-1"></i> Lihat Arsip</button>` : ''}
+                            <button onclick="downloadSiswaArchive(${siswa.id}, '${category}')" ${archiveFileId ? '' : 'disabled'} class="px-2 py-1.5 rounded-lg text-[10px] font-semibold whitespace-nowrap ${archiveFileId ? 'bg-slate-100 hover:bg-slate-200 text-slate-700' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}">
                                 <i class="fa-solid fa-download mr-1"></i> Download Arsip
                             </button>
                             <input type="file" id="siswaArchiveFile-${siswa.id}-${archiveIndex}" accept=".pdf,.jpg,.jpeg,.png" class="hidden" onchange="handleSiswaArchiveUpload(event, ${siswa.id}, '${category}')">
                             <button onclick="document.getElementById('siswaArchiveFile-${siswa.id}-${archiveIndex}').click()" class="px-2 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-semibold transition-colors whitespace-nowrap">
-                                <i class="fa-solid fa-cloud-arrow-up mr-1"></i> Upload Arsip
+                                <i class="fa-solid fa-cloud-arrow-up mr-1"></i> ${archiveFileId ? 'Ganti Arsip' : 'Upload Arsip'}
                             </button>
                         </div>
                     </td>
-                `).join('');
+                `;
+                }).join('');
 
                 tr.innerHTML = `
                     <td class="px-4 py-4 text-center font-bold text-xs text-slate-400">${idx + 1}</td>
@@ -1931,7 +1949,7 @@
             event.target.value = '';
             if (!uploaded) return;
 
-            saveRecordToSheet('siswa', siswa);
+            await saveRecordToSheet('siswa', siswa);
             await loadSpreadsheetData();
             showNotification(`Arsip ${archiveCategory} ${siswa.name} berhasil diunggah.`, 'success');
         }
@@ -2217,12 +2235,17 @@
         function renderKearsipanSiswaTable() {
             const tbody = document.getElementById('kearsipanSiswaTableBody');
             if (!tbody) return;
+            const escapeHtml = value => String(value || '').replace(/[&<>"']/g, char => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[char]));
 
             tbody.innerHTML = eIjazahRoster.map((rosterEntry, index) => {
                 const siswa = getEIjazahStudent(rosterEntry) || {
                     id: `ijazah-${rosterEntry.nisn}`,
                     ...rosterEntry
                 };
+                const ijazah = findUploadedFile('siswa', siswa.id, 'E-Ijazah');
+                const ijazahName = ijazah?.fileName || siswa.ijazahFile?.name || '';
                 return `
                 <tr class="h-16 bg-white hover:bg-slate-50">
                     <td class="border border-slate-300 px-4 py-3">${index + 1}</td>
@@ -2245,10 +2268,10 @@
                         <button onclick="document.getElementById('ijazahFile-${siswa.id}').click()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold">
                             <i class="fa-solid fa-cloud-arrow-up mr-1"></i> Upload File
                         </button>
-                        ${siswa.ijazahFile ? `<div class="mt-1 text-[10px] text-slate-500 truncate max-w-40" title="${siswa.ijazahFile.name}">${siswa.ijazahFile.name}</div>` : ''}
+                        ${ijazahName ? `<div class="mt-1 text-[10px] text-slate-500 truncate max-w-40" title="${escapeHtml(ijazahName)}">${escapeHtml(ijazahName)}</div>` : ''}
                     </td>
                     <td class="border border-slate-300 px-4 py-3">
-                        <button onclick="downloadIjazah(${siswa.id})" ${siswa.ijazahFile ? '' : 'disabled'} class="px-3 py-2 rounded-lg text-xs font-semibold ${siswa.ijazahFile ? 'bg-slate-800 hover:bg-slate-900 text-white' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}">
+                        <button onclick="downloadIjazah(${siswa.id})" ${ijazah ? '' : 'disabled'} class="px-3 py-2 rounded-lg text-xs font-semibold ${ijazah ? 'bg-slate-800 hover:bg-slate-900 text-white' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}">
                             <i class="fa-solid fa-download mr-1"></i> Download File
                         </button>
                     </td>
@@ -2256,7 +2279,7 @@
             `}).join('');
         }
 
-        function handleIjazahUpload(event, siswaId) {
+        async function handleIjazahUpload(event, siswaId) {
             const file = event.target.files[0];
             if (!file) return;
 
@@ -2267,27 +2290,27 @@
                 return;
             }
 
-            const siswa = AppState.siswaList.find(item => item.id === siswaId);
-            if (!siswa) return;
-            siswa.ijazahFile = file;
-            uploadFileToDrive(file, 'siswa', siswa.id, 'E-Ijazah');
-            renderKearsipanSiswaTable();
-            showNotification(`File ijazah ${siswa.name} dikirim ke Google Drive.`, 'success');
+            const siswa = AppState.siswaList.find(item => String(item.id) === String(siswaId));
+            if (!siswa) {
+                event.target.value = '';
+                showNotification('Data siswa arsip tidak ditemukan.', 'error');
+                return;
+            }
+            const uploaded = await uploadFileToDrive(file, 'siswa', siswa.id, 'E-Ijazah');
+            event.target.value = '';
+            if (!uploaded) return;
+            await loadSpreadsheetData();
+            showNotification(`File ijazah ${siswa.name} berhasil diunggah dan dimuat dari Google Drive.`, 'success');
         }
 
         function downloadIjazah(siswaId) {
-            const siswa = AppState.siswaList.find(item => item.id === siswaId);
-            if (!siswa?.ijazahFile) {
-                showNotification('Belum ada file ijazah untuk diunduh.', 'error');
+            const file = findUploadedFile('siswa', siswaId, 'E-Ijazah');
+            const fileId = file && (file.fileId || file.driveFileId);
+            if (!fileId) {
+                showNotification('Belum ada file ijazah di Google Drive.', 'error');
                 return;
             }
-
-            const fileUrl = URL.createObjectURL(siswa.ijazahFile);
-            const link = document.createElement('a');
-            link.href = fileUrl;
-            link.download = siswa.ijazahFile.name;
-            link.click();
-            URL.revokeObjectURL(fileUrl);
+            downloadDriveFile(fileId, file.fileName || 'E-Ijazah');
         }
 
         function renderSKArchive() {
@@ -2302,6 +2325,8 @@
                 const dateLabel = sk.date
                     ? new Date(`${sk.date}T00:00:00`).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
                     : '-';
+                const file = findUploadedFile('arsip', sk.id, 'SK Pembagian Tugas');
+                const fileName = file?.fileName || skArchiveFiles[sk.id]?.name || '';
                 return `
                     <div class="p-5 bg-slate-50 rounded-2xl border border-slate-200 hover:border-cyan-500 transition-all">
                         <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center mb-3 text-lg font-bold">
@@ -2315,10 +2340,13 @@
                             <button onclick="document.getElementById('skUpload-${sk.id}').click()" class="w-full py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-semibold hover:bg-emerald-700">
                                 <i class="fa-solid fa-cloud-arrow-up mr-1"></i> Upload SK
                             </button>
-                            <p id="skFileName-${sk.id}" class="text-[10px] text-slate-500 truncate"></p>
-                            <button onclick="openUploadedSK('${sk.id}')" class="w-full py-1.5 bg-cyan-700 text-white rounded-lg text-xs font-semibold hover:bg-cyan-800">
-                                <i class="fa-solid fa-eye mr-1"></i> Buka SK
-                            </button>
+                            <p id="skFileName-${sk.id}" class="text-[10px] text-slate-500 truncate">${escapeHtml(fileName)}</p>
+                            ${file
+                                ? `<div class="grid grid-cols-2 gap-2">
+                                    <button onclick="openDriveFile('${file.fileId || file.driveFileId}')" class="py-1.5 bg-cyan-700 text-white rounded-lg text-xs font-semibold hover:bg-cyan-800"><i class="fa-solid fa-eye mr-1"></i> Lihat SK</button>
+                                    <button onclick="downloadDriveFile('${file.fileId || file.driveFileId}')" class="py-1.5 bg-slate-800 text-white rounded-lg text-xs font-semibold hover:bg-slate-900"><i class="fa-solid fa-download mr-1"></i> Unduh SK</button>
+                                </div>`
+                                : '<p class="text-[10px] text-slate-400">Belum ada file di Google Drive.</p>'}
                         </div>
                     </div>
                 `;
@@ -2344,7 +2372,7 @@
             showNotification('Menu arsip SK berhasil ditambahkan.', 'success');
         }
 
-        function handleSKUpload(event, skId) {
+        async function handleSKUpload(event, skId) {
             const file = event.target.files[0];
             if (!file) return;
 
@@ -2355,24 +2383,21 @@
                 return;
             }
 
-            skArchiveFiles[skId] = file;
-            uploadFileToDrive(file, 'arsip', skId, 'SK Pembagian Tugas');
-            const label = document.getElementById(`skFileName-${skId}`);
-            if (label) label.textContent = `File dipilih: ${file.name}`;
-            showNotification('File SK berhasil dipilih.', 'success');
+            const uploaded = await uploadFileToDrive(file, 'arsip', skId, 'SK Pembagian Tugas');
+            event.target.value = '';
+            if (!uploaded) return;
+            await loadSpreadsheetData();
+            showNotification('File SK berhasil diunggah dan dimuat dari Google Drive.', 'success');
         }
 
         function openUploadedSK(skId) {
-            const file = skArchiveFiles[skId];
+            const file = findUploadedFile('arsip', skId, 'SK Pembagian Tugas');
             const menu = skArchiveItems.find(item => item.id === skId);
             if (!file) {
                 showNotification(`Silakan unggah file untuk ${menu?.title || 'menu SK ini'} terlebih dahulu.`, 'info');
                 return;
             }
-
-            const fileUrl = URL.createObjectURL(file);
-            window.open(fileUrl, '_blank', 'noopener');
-            setTimeout(() => URL.revokeObjectURL(fileUrl), 60000);
+            openDriveFile(file.fileId || file.driveFileId);
         }
 
         function openModal(modalId) {
@@ -2449,67 +2474,69 @@
         function renderLaporBulanTable() {
             const tbody = document.getElementById('laporBulanTableBody');
             if (!tbody) return;
+            const escapeHtml = value => String(value || '').replace(/[&<>"']/g, char => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[char]));
 
-            tbody.innerHTML = daftarBulanLaporan.map((bulan, index) => `
-                <tr class="h-16 bg-white hover:bg-slate-50">
-                    <td class="border border-slate-300 px-4 py-3">${index + 1}</td>
-                    <td class="border border-slate-300 px-4 py-3 font-semibold">${bulan}</td>
-                    <td class="border border-slate-300 px-4 py-3">
-                        <input type="file" id="laporFile-${index}" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" class="hidden" onchange="handleLaporFileSelected(event, '${bulan}')">
-                        <button onclick="document.getElementById('laporFile-${index}').click()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold">
-                            <i class="fa-solid fa-cloud-arrow-up mr-1"></i> Upload
-                        </button>
-                        <div id="laporFileName-${index}" class="mt-1 text-[10px] text-slate-500"></div>
-                    </td>
-                    <td class="border border-slate-300 px-4 py-3">
-                        <button onclick="viewLaporanBulan('${bulan}')" class="px-3 py-2 bg-cyan-700 hover:bg-cyan-800 text-white rounded-lg text-xs font-semibold">
-                            <i class="fa-solid fa-eye mr-1"></i> Lihat
-                        </button>
-                    </td>
-                    <td class="border border-slate-300 px-4 py-3">
-                        <button onclick="downloadLaporanBulan('${bulan}')" class="px-3 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-semibold">
-                            <i class="fa-solid fa-download mr-1"></i> Download
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
+            tbody.innerHTML = daftarBulanLaporan.map((bulan, index) => {
+                const file = findUploadedFile('laporan', bulan, 'Laporan Bulanan');
+                const fileName = file?.fileName || laporanBulanFiles[bulan]?.name || '';
+                const fileId = file && (file.fileId || file.driveFileId);
+                return `
+                    <tr class="h-16 bg-white hover:bg-slate-50">
+                        <td class="border border-slate-300 px-4 py-3">${index + 1}</td>
+                        <td class="border border-slate-300 px-4 py-3 font-semibold">${bulan}</td>
+                        <td class="border border-slate-300 px-4 py-3">
+                            <input type="file" id="laporFile-${index}" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" class="hidden" onchange="handleLaporFileSelected(event, '${bulan}')">
+                            <button onclick="document.getElementById('laporFile-${index}').click()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold">
+                                <i class="fa-solid fa-cloud-arrow-up mr-1"></i> Upload
+                            </button>
+                            <div id="laporFileName-${index}" class="mt-1 text-[10px] text-slate-500 truncate max-w-48">${escapeHtml(fileName)}</div>
+                        </td>
+                        <td class="border border-slate-300 px-4 py-3">
+                            <button onclick="viewLaporanBulan('${bulan}')" ${fileId ? '' : 'disabled'} class="px-3 py-2 rounded-lg text-xs font-semibold ${fileId ? 'bg-cyan-700 hover:bg-cyan-800 text-white' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}">
+                                <i class="fa-solid fa-eye mr-1"></i> Lihat
+                            </button>
+                        </td>
+                        <td class="border border-slate-300 px-4 py-3">
+                            <button onclick="downloadLaporanBulan('${bulan}')" ${fileId ? '' : 'disabled'} class="px-3 py-2 rounded-lg text-xs font-semibold ${fileId ? 'bg-slate-800 hover:bg-slate-900 text-white' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}">
+                                <i class="fa-solid fa-download mr-1"></i> Download
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
         }
 
-        function handleLaporFileSelected(e, bulan) {
+        async function handleLaporFileSelected(e, bulan) {
             const file = e.target.files[0];
             if (!file) return;
 
-            laporanBulanFiles[bulan] = file;
-            uploadFileToDrive(file, 'laporan', bulan, 'Laporan Bulanan');
-            const index = daftarBulanLaporan.indexOf(bulan);
-            const label = document.getElementById(`laporFileName-${index}`);
-            if (label) label.textContent = file.name;
-            showNotification(`Laporan ${bulan} dipilih: ${file.name}`, 'success');
+            const uploaded = await uploadFileToDrive(file, 'laporan', bulan, 'Laporan Bulanan');
+            e.target.value = '';
+            if (!uploaded) return;
+            await loadSpreadsheetData();
+            showNotification(`Laporan ${bulan} berhasil diunggah dan dimuat dari Google Drive.`, 'success');
         }
 
         function viewLaporanBulan(bulan) {
-            const file = laporanBulanFiles[bulan];
-            if (!file) {
-                showNotification(`Pilih file laporan bulan ${bulan} terlebih dahulu.`, 'error');
+            const file = findUploadedFile('laporan', bulan, 'Laporan Bulanan');
+            const fileId = file && (file.fileId || file.driveFileId);
+            if (!fileId) {
+                showNotification(`File laporan bulan ${bulan} belum ditemukan di Google Drive.`, 'error');
                 return;
             }
-            const fileUrl = URL.createObjectURL(file);
-            window.open(fileUrl, '_blank', 'noopener');
-            setTimeout(() => URL.revokeObjectURL(fileUrl), 60000);
+            openDriveFile(fileId);
         }
 
         function downloadLaporanBulan(bulan) {
-            const file = laporanBulanFiles[bulan];
-            if (!file) {
-                showNotification(`Pilih file laporan bulan ${bulan} terlebih dahulu.`, 'error');
+            const file = findUploadedFile('laporan', bulan, 'Laporan Bulanan');
+            const fileId = file && (file.fileId || file.driveFileId);
+            if (!fileId) {
+                showNotification(`File laporan bulan ${bulan} belum ditemukan di Google Drive.`, 'error');
                 return;
             }
-            const fileUrl = URL.createObjectURL(file);
-            const link = document.createElement('a');
-            link.href = fileUrl;
-            link.download = file.name;
-            link.click();
-            URL.revokeObjectURL(fileUrl);
+            downloadDriveFile(fileId, file.fileName || `Laporan-${bulan}`);
         }
 
         function handleFileSelected(e) {
